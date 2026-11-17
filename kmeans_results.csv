@@ -1,0 +1,7 @@
+CustomerID,Age,AnnualIncome,SpendingScore,Cluster,Customer_Segment
+1,22,25000,80,2,Low Income - High Spending
+2,35,60000,40,1,High Income - Low Spending
+3,28,30000,90,2,Low Income - High Spending
+4,45,90000,30,1,High Income - Low Spending
+5,23,20000,85,2,Low Income - High Spending
+6,30,50000,70,0,Medium Income - High Spending

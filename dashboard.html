@@ -1,0 +1,478 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Segmentation Dashboard</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f1f5f9;
+    color: #1e293b;
+    padding: 25px;
+}
+
+header {
+    background: #1e3a8a;
+    color: white;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+header h1 { margin-bottom: 10px; }
+
+.section {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px #00000010;
+}
+
+.section h2 {
+    margin-bottom: 20px;
+    color: #1e3a8a;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px #00000010;
+}
+
+.card h3 {
+    color: #64748b;
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.card p {
+    color: #1d4ed8;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.bar-row { margin: 16px 0; }
+
+.bar-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 7px;
+}
+
+.bar-background {
+    background: #e2e8f0;
+    height: 14px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: #2563eb;
+}
+
+.group-fill { background: #0f766e; }
+
+.controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+input, select {
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    font-size: 14px;
+}
+
+input { flex: 1; min-width: 180px; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+
+th, td {
+    padding: 13px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+th {
+    background: #1e3a8a;
+    color: white;
+}
+
+tr:hover { background: #eff6ff; }
+
+.table-container { overflow-x: auto; }
+
+.insights li {
+    margin: 12px 0;
+    line-height: 1.5;
+}
+
+#noResults {
+    display: none;
+    color: #dc2626;
+    margin-top: 15px;
+}
+
+#status {
+    margin-bottom: 15px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
+}
+
+@media (max-width: 850px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .charts { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 500px) {
+    body { padding: 12px; }
+    .cards { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Customer Segmentation Dashboard</h1>
+    <p>Customer Analytics and Business Insights</p>
+</header>
+
+<div class="cards">
+    <div class="card">
+        <h3>Total Customers</h3>
+        <p id="totalCustomers">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Average Age</h3>
+        <p id="averageAge">0</p>
+    </div>
+
+    <div class="card">
+        <h3>Average Income</h3>
+        <p id="averageIncome">₹0</p>
+    </div>
+
+    <div class="card">
+        <h3>Average Spending</h3>
+        <p id="averageSpending">0</p>
+    </div>
+</div>
+
+<div class="charts">
+    <div class="section">
+        <h2>K-Means Customer Cluster Distribution</h2>
+        <div id="groupChart"></div>
+    </div>
+
+    <div class="section">
+        <h2>Customer Spending Scores</h2>
+        <div id="spendingChart"></div>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Customer Details</h2>
+
+    <p id="status">Loading customer data...</p>
+
+    <div class="controls">
+        <input type="text" id="searchInput"
+            placeholder="Search Customer ID..."
+            oninput="applyFilters()">
+
+        <select id="groupFilter" onchange="applyFilters()">
+            <option value="all">All Customers</option>
+            <option value="0">Cluster 0 - Medium Income</option>
+            <option value="1">Cluster 1 - High Income</option>
+            <option value="2">Cluster 2 - Low Income</option>
+        </select>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Customer ID</th>
+                    <th>Age</th>
+                    <th>Annual Income</th>
+                    <th>Spending Score</th>
+                    <th>K-Means Cluster</th>
+                    <th>Customer Segment</th>
+                </tr>
+            </thead>
+            <tbody id="customersTableBody"></tbody>
+        </table>
+    </div>
+
+    <p id="noResults">No matching customers found.</p>
+</div>
+
+<div class="section">
+    <h2>Business Insights</h2>
+    <ul class="insights" id="businessInsights">
+        <li>Loading business insights...</li>
+    </ul>
+</div>
+
+<footer>
+    Customer Segmentation Project | Data Analytics | K-Means Clustering
+</footer>
+
+<script>
+let allCustomers = [];
+
+function formatCurrency(value) {
+    return "₹" + Number(value).toLocaleString("en-IN");
+}
+
+function getCustomerGroup(customer) {
+    return customer.Customer_Segment;
+}
+
+async function loadDashboard() {
+    try {
+        const response = await fetch("dashboard_data.json");
+
+        if (!response.ok) {
+            throw new Error("Could not load dashboard_data.json");
+        }
+
+        const data = await response.json();
+        allCustomers = data.customers;
+
+        document.getElementById("totalCustomers").textContent =
+            data.summary.total_customers;
+
+        document.getElementById("averageAge").textContent =
+            data.summary.average_age;
+
+        document.getElementById("averageIncome").textContent =
+            formatCurrency(data.summary.average_income);
+
+        document.getElementById("averageSpending").textContent =
+            data.summary.average_spending;
+
+        displayCustomers(allCustomers);
+        displayGroupChart(allCustomers);
+        displaySpendingChart(allCustomers);
+        displayInsights(allCustomers);
+
+        document.getElementById("status").textContent =
+            "Actual K-Means customer data loaded successfully.";
+
+    } catch (error) {
+        document.getElementById("status").textContent =
+            "Error loading data: " + error.message;
+        console.error(error);
+    }
+}
+
+function displayCustomers(customers) {
+    const tableBody = document.getElementById("customersTableBody");
+    tableBody.innerHTML = "";
+
+    customers.forEach(customer => {
+        const row = document.createElement("tr");
+
+        const values = [
+            customer.CustomerID,
+            customer.Age,
+            formatCurrency(customer.AnnualIncome),
+            customer.SpendingScore,
+            "Cluster " + customer.Cluster,
+            getCustomerGroup(customer)
+        ];
+
+        values.forEach(value => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        });
+
+        tableBody.appendChild(row);
+    });
+}
+
+function displayGroupChart(customers) {
+    const chart = document.getElementById("groupChart");
+    chart.innerHTML = "";
+
+    const total = customers.length;
+
+    const segments = [
+        { id: 0, name: "Medium Income - High Spending" },
+        { id: 1, name: "High Income - Low Spending" },
+        { id: 2, name: "Low Income - High Spending" }
+    ];
+
+    segments.forEach(segment => {
+        const count = customers.filter(
+            customer => Number(customer.Cluster) === segment.id
+        ).length;
+
+        const percentage = total ? count / total * 100 : 0;
+
+        const row = document.createElement("div");
+        row.className = "bar-row";
+
+        row.innerHTML = `
+            <div class="bar-label">
+                <span>Cluster ${segment.id}: ${segment.name}</span>
+                <strong>${count} (${percentage.toFixed(0)}%)</strong>
+            </div>
+            <div class="bar-background">
+                <div class="bar-fill ${segment.id === 0 ? "group-fill" : ""}"
+                     style="width:${percentage}%"></div>
+            </div>
+        `;
+
+        chart.appendChild(row);
+    });
+}
+
+function displaySpendingChart(customers) {
+    const chart = document.getElementById("spendingChart");
+    chart.innerHTML = "";
+
+    customers.forEach(customer => {
+        const row = document.createElement("div");
+        row.className = "bar-row";
+
+        const label = document.createElement("div");
+        label.className = "bar-label";
+        label.innerHTML = `
+            <span>Customer ${customer.CustomerID}</span>
+            <strong>${customer.SpendingScore}</strong>
+        `;
+
+        const background = document.createElement("div");
+        background.className = "bar-background";
+
+        const fill = document.createElement("div");
+        fill.className = "bar-fill";
+        fill.style.width =
+            Math.min(Math.max(customer.SpendingScore, 0), 100) + "%";
+
+        background.appendChild(fill);
+        row.appendChild(label);
+        row.appendChild(background);
+        chart.appendChild(row);
+    });
+}
+
+function displayInsights(customers) {
+    const insights = document.getElementById("businessInsights");
+
+    if (!customers.length) {
+        insights.innerHTML = "<li>No customer data available.</li>";
+        return;
+    }
+
+    const segments = [
+        { id: 0, name: "Medium Income - High Spending" },
+        { id: 1, name: "High Income - Low Spending" },
+        { id: 2, name: "Low Income - High Spending" }
+    ];
+
+    let html = "";
+
+    segments.forEach(segment => {
+        const count = customers.filter(
+            c => Number(c.Cluster) === segment.id
+        ).length;
+
+        const percentage = count / customers.length * 100;
+
+        html += `<li>${percentage.toFixed(0)}% of customers belong to
+            ${segment.name} (Cluster ${segment.id}).</li>`;
+    });
+
+    const highestSpending = customers.reduce((a, b) =>
+        a.SpendingScore > b.SpendingScore ? a : b
+    );
+
+    const highestIncome = customers.reduce((a, b) =>
+        a.AnnualIncome > b.AnnualIncome ? a : b
+    );
+
+    html += `
+        <li>Customer ${highestSpending.CustomerID} has the highest spending score.</li>
+        <li>Customer ${highestIncome.CustomerID} has the highest annual income.</li>
+        <li>K-Means clustering helps businesses understand customer behaviour
+            and plan targeted marketing strategies.</li>
+    `;
+
+    insights.innerHTML = html;
+}
+
+function applyFilters() {
+    const searchValue = document.getElementById("searchInput")
+        .value.toLowerCase();
+
+    const groupValue = document.getElementById("groupFilter").value;
+
+    const filteredCustomers = allCustomers.filter(customer => {
+        const matchesSearch = String(customer.CustomerID)
+            .toLowerCase().includes(searchValue);
+
+        const matchesGroup = groupValue === "all" ||
+            String(customer.Cluster) === groupValue;
+
+        return matchesSearch && matchesGroup;
+    });
+
+    displayCustomers(filteredCustomers);
+
+    document.getElementById("noResults").style.display =
+        filteredCustomers.length === 0 ? "block" : "none";
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,28 @@
+
+CUSTOMER SEGMENTATION PROJECT
+================================
+
+PROJECT SUMMARY
+
+Total Customers: 5
+Average Age: 30.6
+Average Annual Income: 45000
+Average Spending Score: 65
+
+CUSTOMER GROUPS
+
+Low Income - High Spending: 3 customers
+
+High Income - Low Spending: 2 customers
+
+KEY INSIGHTS
+
+1. Most customers belong to the Low Income - High Spending group.
+2. Two customers have high income and low spending.
+3. Customer 3 has the highest spending score.
+4. Customer 4 has the highest annual income.
+
+CONCLUSION
+
+Customer segmentation helps businesses understand
+customer behavior and plan targeted marketing strategies.
